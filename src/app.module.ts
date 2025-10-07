@@ -10,6 +10,7 @@ import { SectorModule } from "./modules/sector/sector.module";
 import { SubSectorModule } from "./modules/subSector/subSector.module";
 import { TaskModule } from "./modules/task/task.module";
 import { AuthGuard } from "./config/guard/auth.guard";
+import { ProjectModule } from "./modules/project/project.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AuthGuard } from "./config/guard/auth.guard";
     SectorModule,
     SubSectorModule,
     TaskModule,
+    ProjectModule,
   ],
   controllers: [AppController],
   providers: [
