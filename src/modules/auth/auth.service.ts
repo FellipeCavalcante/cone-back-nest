@@ -22,7 +22,14 @@ export class AuthService {
     password: string;
   }): Promise<{
     access_token: string;
-    user: { id: string; name: string; email: string; type: string | null };
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      type: string | null;
+      enterpriseId: string | null;
+      subSectorId: string | null;
+    };
   }> {
     const user = await this.prismaService.users.findUnique({
       where: { email },
@@ -38,7 +45,13 @@ export class AuthService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    const payload = { sub: user.id, email: user.email, type: user.type };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      type: user.type,
+      enterpriseId: user.enterprise_id,
+      subSectorId: user.sub_sector_id,
+    };
     const token = await this.jwtService.signAsync(payload);
 
     return {
@@ -48,6 +61,8 @@ export class AuthService {
         name: user.name,
         email: user.email,
         type: user.type || null,
+        enterpriseId: user.enterprise_id || null,
+        subSectorId: user.sub_sector_id || null,
       },
     };
   }
