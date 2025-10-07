@@ -12,10 +12,10 @@ model enterprise {
   name        String    @db.VarChar(100)
   description String
   created_at  DateTime? @default(now()) @db.Timestamp(6)
+  project     project[]
   sector      sector[]
+  tasks       tasks[]
   users       users[]
-
-  tasks tasks[] @relation(map: "fk_task_enterprise")
 }
 
 model flyway_schema_history {
@@ -55,12 +55,13 @@ model sector {
 }
 
 model sub_sector {
-  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name            String            @db.VarChar(100)
-  sector_id       String            @db.Uuid
-  sector          sector            @relation(fields: [sector_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sub_sector_sector")
-  task_sub_sector task_sub_sector[]
-  users           users[]
+  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String               @db.VarChar(100)
+  sector_id          String               @db.Uuid
+  project_sub_sector project_sub_sector[]
+  sector             sector               @relation(fields: [sector_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sub_sector_sector")
+  task_sub_sector    task_sub_sector[]
+  users              users[]
 }
 
 model task_members {
@@ -90,30 +91,75 @@ model tasks {
   title           String            @db.VarChar(255)
   description     String
   status          String            @db.VarChar(50)
+  enterprise_id   String?           @db.Uuid
   created_at      DateTime?         @default(now()) @db.Timestamp(6)
   updated_at      DateTime?         @db.Timestamp(6)
   finished_at     DateTime?         @db.Timestamp(6)
+  project_task    project_task[]
   task_members    task_members[]
   task_sub_sector task_sub_sector[]
-
-  enterprise_id String     @db.Uuid
-  enterprise    enterprise @relation(fields: [enterprise_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_task_enterprise")
+  enterprise      enterprise?       @relation(fields: [enterprise_id], references: [id], onUpdate: NoAction, map: "fk_task_enterprise")
 
   @@index([status], map: "idx_task_status")
 }
 
 model users {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String         @db.VarChar(100)
-  password      String         @db.VarChar(100)
-  email         String         @unique @db.VarChar(100)
-  type          String?        @db.VarChar(10)
-  enterprise_id String?        @db.Uuid
-  sub_sector_id String?        @db.Uuid
-  created_at    DateTime?      @default(now()) @db.Timestamp(6)
-  updated_at    DateTime?      @db.Timestamp(6)
-  logs          logs[]
-  task_members  task_members[]
-  enterprise    enterprise?    @relation(fields: [enterprise_id], references: [id], onUpdate: NoAction, map: "fk_user_enterprise")
-  sub_sector    sub_sector?    @relation(fields: [sub_sector_id], references: [id], onUpdate: NoAction, map: "fk_user_sub_sector")
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String           @db.VarChar(100)
+  password       String           @db.VarChar(100)
+  email          String           @unique @db.VarChar(100)
+  type           String?          @db.VarChar(10)
+  enterprise_id  String?          @db.Uuid
+  sub_sector_id  String?          @db.Uuid
+  created_at     DateTime?        @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?        @db.Timestamp(6)
+  logs           logs[]
+  project_member project_member[]
+  task_members   task_members[]
+  enterprise     enterprise?      @relation(fields: [enterprise_id], references: [id], onUpdate: NoAction, map: "fk_user_enterprise")
+  sub_sector     sub_sector?      @relation(fields: [sub_sector_id], references: [id], onUpdate: NoAction, map: "fk_user_sub_sector")
+}
+
+model project {
+  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String               @db.VarChar
+  description        String
+  status             String               @db.VarChar(30)
+  enterprise_id      String?              @db.Uuid
+  created_at         DateTime?            @default(now()) @db.Timestamp(6)
+  updated_at         DateTime?            @db.Timestamp(6)
+  enterprise         enterprise?          @relation(fields: [enterprise_id], references: [id], onUpdate: NoAction, map: "fk_project_enterprise")
+  project_member     project_member[]
+  project_sub_sector project_sub_sector[]
+  project_task       project_task[]
+}
+
+model project_member {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  project_id String  @db.Uuid
+  user_id    String  @db.Uuid
+  project    project @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_project_member_project")
+  users      users   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_project_member_user")
+
+  @@unique([project_id, user_id], map: "uq_project_members")
+}
+
+model project_sub_sector {
+  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  project_id    String     @db.Uuid
+  sub_sector_id String     @db.Uuid
+  project       project    @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_project_sub_sector_project")
+  sub_sector    sub_sector @relation(fields: [sub_sector_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_project_sub_sector_sub_sector")
+
+  @@unique([project_id, sub_sector_id], map: "uq_project_sub_sector")
+}
+
+model project_task {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  project_id String  @db.Uuid
+  task_id    String  @db.Uuid
+  project    project @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_project_task_project")
+  tasks      tasks   @relation(fields: [task_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_project_task_task")
+
+  @@unique([project_id, task_id], map: "uq_project_tasks")
 }
