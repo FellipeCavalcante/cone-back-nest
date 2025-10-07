@@ -1,11 +1,12 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "src/config/database/prisma.service";
+import { UserDomain } from "../user/domain/user";
 
 @Injectable()
 export class EnterpriseService {
@@ -15,24 +16,20 @@ export class EnterpriseService {
   ) {}
 
   async create({
-    id,
+    user,
     name,
     description,
   }: {
     name: string;
     description: string;
-    id: string;
+    user: UserDomain;
   }): Promise<{
     access_token: string;
     enterprise: { id: string; name: string; description: string };
   }> {
     try {
-      const user = await this.prisma.users.findUnique({
-        where: { id },
-      });
-
       if (!user) {
-        throw new NotFoundException("User not found");
+        throw new ForbiddenException("Forbidden");
       }
 
       const enterpriseAllReadyExists = await this.prisma.enterprise.findFirst({
@@ -60,6 +57,8 @@ export class EnterpriseService {
         sub: newUserRole.id,
         email: newUserRole.email,
         type: newUserRole.type,
+        enterpriseId: newUserRole.enterprise_id,
+        subSectorId: newUserRole.sub_sector_id,
       };
       const token = await this.jwtService.signAsync(payload);
 
@@ -74,7 +73,7 @@ export class EnterpriseService {
     } catch (error: any) {
       console.log(error);
       if (
-        error instanceof NotFoundException ||
+        error instanceof ForbiddenException ||
         error instanceof ConflictException
       ) {
         throw error;
@@ -102,6 +101,36 @@ export class EnterpriseService {
 
       return {
         data: enterprises,
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      };
+    } catch (error: any) {
+      throw new InternalServerErrorException({
+        message: "Internal server error",
+        error: error.message,
+      });
+    }
+  }
+
+  async getEnterpriseMembers(enterpriseId: string, page = 1, pageSize = 20) {
+    try {
+      const skip = (page - 1) * pageSize;
+
+      const [members, total] = await this.prisma.$transaction([
+        this.prisma.users.findMany({
+          where: { enterprise_id: enterpriseId },
+          select: { id: true, name: true, email: true, type: true },
+          skip,
+          take: pageSize,
+          orderBy: { name: "asc" },
+        }),
+        this.prisma.users.count({ where: { enterprise_id: enterpriseId } }),
+      ]);
+
+      return {
+        data: members,
         page,
         pageSize,
         total,
