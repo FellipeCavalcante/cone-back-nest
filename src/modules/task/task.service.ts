@@ -4,29 +4,26 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "src/config/database/prisma.service";
+import { UserDomain } from "../user/domain/user";
 
 @Injectable()
 export class TaskService {
   constructor(private prisma: PrismaService) {}
 
   async create({
-    id,
+    user,
     title,
     description,
     memberIds,
     subSectorIds,
   }: {
-    id: string;
+    user: UserDomain;
     title: string;
     description: string;
     memberIds?: string[];
     subSectorIds?: string[];
   }) {
     try {
-      const user = await this.prisma.users.findUnique({ where: { id } });
-
-      if (!user) throw new NotFoundException("User not found");
-
       const task = await this.prisma.tasks.create({
         data: {
           title,

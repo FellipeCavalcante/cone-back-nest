@@ -1,29 +1,26 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
 import { PrismaService } from "src/config/database/prisma.service";
+import { UserDomain } from "../user/domain/user";
 
 @Injectable()
 export class SectorService {
   constructor(private prisma: PrismaService) {}
 
-  async create({ id, name }: { id: string; name: string }): Promise<{
+  async create({ user, name }: { user: UserDomain; name: string }): Promise<{
     message: string;
     id: string;
     name: string;
     enterprise_id: string;
   }> {
     try {
-      const user = await this.prisma.users.findUnique({
-        where: { id },
-      });
-
       if (!user) {
-        throw new NotFoundException("User not found");
+        throw new ForbiddenException("Forbidden");
       }
 
       if (
@@ -62,7 +59,7 @@ export class SectorService {
       };
     } catch (error: any) {
       if (
-        error instanceof NotFoundException ||
+        error instanceof ForbiddenException ||
         error instanceof UnauthorizedException ||
         error instanceof ConflictException
       ) {
@@ -75,15 +72,12 @@ export class SectorService {
     }
   }
 
-  async getAll(id: string, page = 1, pageSize = 20) {
+  async getAll(user: UserDomain, page = 1, pageSize = 20) {
     try {
       const skip = (page - 1) * pageSize;
-      const user = await this.prisma.users.findUnique({
-        where: { id },
-      });
 
       if (!user) {
-        throw new NotFoundException("User not found");
+        throw new ForbiddenException("Forbidden");
       }
 
       if (!user.enterprise_id) {
@@ -111,7 +105,7 @@ export class SectorService {
       };
     } catch (error: any) {
       if (
-        error instanceof NotFoundException ||
+        error instanceof ForbiddenException ||
         error instanceof UnauthorizedException
       ) {
         throw error;
