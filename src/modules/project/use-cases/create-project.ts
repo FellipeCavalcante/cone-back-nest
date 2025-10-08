@@ -35,18 +35,27 @@ export class CreateProjectUseCase {
         throw new UnauthorizedException("Only admins can create projects");
       }
 
+      if (!user.enterpriseId) {
+        throw new UnauthorizedException("User is not linked to an enterprise");
+      }
+
       const project = await this.prisma.project.create({
         data: {
           name,
           description,
           status: status || "STARTED",
-          enterprise_id: user.enterprise_id || "",
+          enterprise_id: user.enterpriseId ?? null,
           project_member: {
-            connect: members?.map((memberId) => ({ id: memberId })) || [],
+            create:
+              members?.map((memberId) => ({
+                user_id: memberId,
+              })) || [],
           },
           project_sub_sector: {
-            connect:
-              subSectors?.map((subSectorId) => ({ id: subSectorId })) || [],
+            create:
+              subSectors?.map((subSectorId) => ({
+                sub_sector_id: subSectorId,
+              })) || [],
           },
         },
       });
