@@ -3,6 +3,14 @@ import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "src/config/database/prisma.service";
 import * as bcrypt from "bcrypt";
 
+export interface LoginResponse {
+  id: string;
+  name: string;
+  email: string;
+  type: string;
+  token: string;
+}
+
 @Injectable()
 export class LoginUseCase {
   constructor(
@@ -16,13 +24,7 @@ export class LoginUseCase {
   }: {
     email: string;
     password: string;
-  }): Promise<{
-    id: string;
-    name: string;
-    email: string;
-    type: string;
-    token: string;
-  }> {
+  }): Promise<LoginResponse> {
     const user = await this.prismaService.users.findUnique({
       where: { email },
     });

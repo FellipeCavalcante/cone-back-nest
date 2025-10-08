@@ -6,6 +6,13 @@ import {
 import { PrismaService } from "src/config/database/prisma.service";
 import * as bcrypt from "bcrypt";
 
+export interface RegisterResponse {
+  id: string;
+  name: string;
+  email: string;
+  type: string | null;
+}
+
 @Injectable()
 export class RegisterUseCase {
   constructor(private prismaService: PrismaService) {}
@@ -20,12 +27,7 @@ export class RegisterUseCase {
     email: string;
     password: string;
     type?: string;
-  }): Promise<{
-    id: string;
-    name: string;
-    email: string;
-    type: string | null;
-  }> {
+  }): Promise<RegisterResponse> {
     const userExists = await this.prismaService.users.findUnique({
       where: { email },
     });
