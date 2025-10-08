@@ -4,13 +4,22 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "src/config/database/prisma.service";
-import { UserDomain } from "../user/domain/user";
+import { UserDomain } from "src/modules/user/domain/user";
+
+export interface TaskResponse {
+  id: string;
+  creatorId: string;
+  title: string;
+  description: string;
+  memberIds: string[];
+  subSectorIds: string[];
+}
 
 @Injectable()
-export class TaskService {
+export class CreateTaskUseCase {
   constructor(private prisma: PrismaService) {}
 
-  async create({
+  async execute({
     user,
     title,
     description,
@@ -22,7 +31,7 @@ export class TaskService {
     description: string;
     memberIds?: string[];
     subSectorIds?: string[];
-  }) {
+  }): Promise<TaskResponse> {
     try {
       const task = await this.prisma.tasks.create({
         data: {
@@ -31,16 +40,32 @@ export class TaskService {
           enterprise_id: user.enterpriseId || "",
           status: "PENDING",
           task_members: {
-            connect: memberIds?.map((memberId) => ({ id: memberId })) || [],
+            create:
+              memberIds?.map((memberId) => ({
+                user_id: memberId,
+              })) || [],
           },
           task_sub_sector: {
-            connect:
-              subSectorIds?.map((subSectorId) => ({ id: subSectorId })) || [],
+            create:
+              subSectorIds?.map((subSectorId) => ({
+                sub_sector_id: subSectorId,
+              })) || [],
           },
+        },
+        include: {
+          task_members: { select: { user_id: true } },
+          task_sub_sector: { select: { sub_sector_id: true } },
         },
       });
 
-      return { task };
+      return {
+        id: task.id,
+        creatorId: user.id,
+        title: task.title,
+        description: task.description,
+        memberIds: task.task_members.map((m) => m.user_id),
+        subSectorIds: task.task_sub_sector.map((s) => s.sub_sector_id),
+      };
     } catch (error: any) {
       if (error instanceof NotFoundException) {
         throw error;
