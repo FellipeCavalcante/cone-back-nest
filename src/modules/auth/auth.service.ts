@@ -21,15 +21,11 @@ export class AuthService {
     email: string;
     password: string;
   }): Promise<{
-    access_token: string;
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      type: string | null;
-      enterpriseId: string | null;
-      subSectorId: string | null;
-    };
+    id: string;
+    name: string;
+    email: string;
+    type: string;
+    token: string;
   }> {
     const user = await this.prismaService.users.findUnique({
       where: { email },
@@ -55,15 +51,11 @@ export class AuthService {
     const token = await this.jwtService.signAsync(payload);
 
     return {
-      access_token: token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        type: user.type || null,
-        enterpriseId: user.enterprise_id || null,
-        subSectorId: user.sub_sector_id || null,
-      },
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      type: user.type || "",
+      token: token,
     };
   }
 
