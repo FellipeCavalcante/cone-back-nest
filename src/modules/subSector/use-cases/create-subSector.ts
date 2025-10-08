@@ -3,16 +3,21 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  UnauthorizedException,
 } from "@nestjs/common";
 import { PrismaService } from "src/config/database/prisma.service";
-import { UserDomain } from "../user/domain/user";
+import { UserDomain } from "src/modules/user/domain/user";
+
+export interface CreateSubSectorResponse {
+  id: string;
+  name: string;
+  sectorId: string;
+}
 
 @Injectable()
-export class SubSectorService {
+export class CreateSubSectorUseCase {
   constructor(private prisma: PrismaService) {}
 
-  async create({
+  async execute({
     user,
     name,
     sector,
@@ -20,7 +25,7 @@ export class SubSectorService {
     user: UserDomain;
     name: string;
     sector: string;
-  }): Promise<{ id: string; name: string; sectorId: string }> {
+  }): Promise<CreateSubSectorResponse> {
     try {
       if (!user) throw new ForbiddenException("Forbidden");
 
@@ -49,38 +54,6 @@ export class SubSectorService {
     } catch (error: any) {
       if (
         error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-      throw new InternalServerErrorException({
-        message: "Internal server error",
-        error: error.message,
-      });
-    }
-  }
-
-  async addMemberToSubSector(
-    user: UserDomain,
-    subSectorId: string,
-    memberId: string,
-  ): Promise<{ message: string }> {
-    try {
-      if (!user) throw new ForbiddenException("Forbidden");
-
-      if (user.type !== "ADMIN" && user.type !== "MANAGER") {
-        throw new UnauthorizedException("User not authorized");
-      }
-
-      await this.prisma.users.update({
-        where: { id: memberId },
-        data: { sub_sector_id: subSectorId },
-      });
-
-      return { message: "Member added to sub sector successfully" };
-    } catch (error: any) {
-      if (
-        error instanceof UnauthorizedException ||
         error instanceof ForbiddenException
       ) {
         throw error;
