@@ -11,9 +11,14 @@ import { SubSectorModule } from "./modules/subSector/subSector.module";
 import { TaskModule } from "./modules/task/task.module";
 import { AuthGuard } from "./config/guard/auth.guard";
 import { ProjectModule } from "./modules/project/project.module";
+import { ConfigModule } from "@nestjs/config";
+import { EmailModule } from "./config/email/email.module";
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     AuthModule,
     PrismaModule,
     EnterpriseModule,
@@ -22,6 +27,7 @@ import { ProjectModule } from "./modules/project/project.module";
     SubSectorModule,
     TaskModule,
     ProjectModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [
