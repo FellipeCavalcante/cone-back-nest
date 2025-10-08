@@ -31,7 +31,7 @@ export class SubSectorService {
 
       if (!sectorExists) throw new NotFoundException("Sector not found");
 
-      if (sectorExists.enterprise_id !== user.enterprise_id)
+      if (sectorExists.enterprise_id !== user.enterpriseId)
         throw new ForbiddenException("Sector id and user do not match");
 
       const subSector = await this.prisma.sub_sector.create({

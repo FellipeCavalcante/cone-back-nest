@@ -25,7 +25,7 @@ export class SectorService {
 
       if (
         (user.type !== "ADMIN" && user.type !== "MANAGER") ||
-        !user.enterprise_id
+        !user.enterpriseId
       ) {
         throw new UnauthorizedException("User not authorized");
       }
@@ -36,7 +36,7 @@ export class SectorService {
             equals: name,
             mode: "insensitive",
           },
-          enterprise_id: user.enterprise_id,
+          enterprise_id: user.enterpriseId,
         },
       });
 
@@ -47,7 +47,7 @@ export class SectorService {
       const sector = await this.prisma.sector.create({
         data: {
           name,
-          enterprise_id: user.enterprise_id,
+          enterprise_id: user.enterpriseId,
         },
       });
 
@@ -80,19 +80,19 @@ export class SectorService {
         throw new ForbiddenException("Forbidden");
       }
 
-      if (!user.enterprise_id) {
+      if (!user.enterpriseId) {
         throw new UnauthorizedException("User not authorized");
       }
 
       const [sectors, total] = await this.prisma.$transaction([
         this.prisma.sector.findMany({
-          where: { enterprise_id: user.enterprise_id },
+          where: { enterprise_id: user.enterpriseId },
           skip,
           take: pageSize,
           orderBy: { name: "asc" },
         }),
         this.prisma.sector.count({
-          where: { enterprise_id: user.enterprise_id },
+          where: { enterprise_id: user.enterpriseId },
         }),
       ]);
 

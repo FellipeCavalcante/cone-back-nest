@@ -28,7 +28,7 @@ export class TaskService {
         data: {
           title,
           description,
-          enterprise_id: user.enterprise_id || "",
+          enterprise_id: user.enterpriseId || "",
           status: "PENDING",
           task_members: {
             connect: memberIds?.map((memberId) => ({ id: memberId })) || [],
