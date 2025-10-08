@@ -1,23 +1,27 @@
 import {
   ConflictException,
   ForbiddenException,
-  Injectable,
   InternalServerErrorException,
   UnauthorizedException,
 } from "@nestjs/common";
 import { PrismaService } from "src/config/database/prisma.service";
-import { UserDomain } from "../user/domain/user";
+import { UserDomain } from "src/modules/user/domain/user";
 
-@Injectable()
-export class SectorService {
+export interface CreateSectorResponse {
+  id: string;
+  name: string;
+}
+
+export class CreateSectorUseCase {
   constructor(private prisma: PrismaService) {}
 
-  async create({ user, name }: { user: UserDomain; name: string }): Promise<{
-    message: string;
-    id: string;
+  async execute({
+    user,
+    name,
+  }: {
+    user: UserDomain;
     name: string;
-    enterprise_id: string;
-  }> {
+  }): Promise<CreateSectorResponse> {
     try {
       if (!user) {
         throw new ForbiddenException("Forbidden");
@@ -52,61 +56,14 @@ export class SectorService {
       });
 
       return {
-        message: "Sector created successfully",
         id: sector.id,
         name: sector.name,
-        enterprise_id: sector.enterprise_id,
       };
     } catch (error: any) {
       if (
         error instanceof ForbiddenException ||
         error instanceof UnauthorizedException ||
         error instanceof ConflictException
-      ) {
-        throw error;
-      }
-      throw new InternalServerErrorException({
-        message: "Internal server error",
-        error: error.message,
-      });
-    }
-  }
-
-  async getAll(user: UserDomain, page = 1, pageSize = 20) {
-    try {
-      const skip = (page - 1) * pageSize;
-
-      if (!user) {
-        throw new ForbiddenException("Forbidden");
-      }
-
-      if (!user.enterpriseId) {
-        throw new UnauthorizedException("User not authorized");
-      }
-
-      const [sectors, total] = await this.prisma.$transaction([
-        this.prisma.sector.findMany({
-          where: { enterprise_id: user.enterpriseId },
-          skip,
-          take: pageSize,
-          orderBy: { name: "asc" },
-        }),
-        this.prisma.sector.count({
-          where: { enterprise_id: user.enterpriseId },
-        }),
-      ]);
-
-      return {
-        data: sectors,
-        page,
-        pageSize,
-        total,
-        totalPages: Math.ceil(total / pageSize),
-      };
-    } catch (error: any) {
-      if (
-        error instanceof ForbiddenException ||
-        error instanceof UnauthorizedException
       ) {
         throw error;
       }
