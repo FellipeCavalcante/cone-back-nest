@@ -6,6 +6,13 @@ import {
 import { PrismaService } from "src/config/database/prisma.service";
 import { UserDomain } from "src/modules/user/domain/user";
 
+export interface CreateProjectResponse {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+}
+
 @Injectable()
 export class CreateProjectUseCase {
   constructor(readonly prisma: PrismaService) {}
@@ -24,12 +31,7 @@ export class CreateProjectUseCase {
     status?: string;
     subSectors?: string[];
     members?: string[];
-  }): Promise<{
-    id: string;
-    name: string;
-    description: string;
-    status: string;
-  }> {
+  }): Promise<CreateProjectResponse> {
     try {
       if (user.type !== "ADMIN") {
         throw new UnauthorizedException("Only admins can create projects");
