@@ -4,6 +4,8 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   Query,
 } from "@nestjs/common";
@@ -12,12 +14,15 @@ import { UserDomain } from "../user/domain/user";
 import { GetUser } from "src/utils/decorators/get-user.decorator";
 import { CreateSectorUseCase } from "./use-cases/create-sector";
 import { GetAllSectorsUseCase } from "./use-cases/get-all-sectors";
+import { EditSectorUseCase } from "./use-cases/edit-sector";
+import { UpdateSectorDto } from "./dtos/update-sector.dto";
 
 @Controller("api/v2/sector")
 export class SectorController {
   constructor(
     private createSectorUseCase: CreateSectorUseCase,
     private getAllSectorsUseCase: GetAllSectorsUseCase,
+    private editSectorUseCase: EditSectorUseCase,
   ) {}
 
   @Post("create")
@@ -41,5 +46,15 @@ export class SectorController {
       currentPage,
       currentPageSize,
     );
+  }
+
+  @Patch(":sectorId")
+  @HttpCode(HttpStatus.OK)
+  async edit(
+    @Body() request: UpdateSectorDto,
+    @GetUser() user: UserDomain,
+    @Param("sectorId") sectorId: string,
+  ) {
+    return this.editSectorUseCase.execute({ user, sectorId, ...request });
   }
 }
