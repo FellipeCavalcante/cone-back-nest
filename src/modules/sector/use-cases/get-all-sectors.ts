@@ -2,10 +2,12 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   UnauthorizedException,
+  Injectable,
 } from "@nestjs/common";
 import { PrismaService } from "src/config/database/prisma.service";
 import { UserDomain } from "src/modules/user/domain/user";
 
+@Injectable()
 export class GetAllSectorsUseCase {
   constructor(private prisma: PrismaService) {}
 

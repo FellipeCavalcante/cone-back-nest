@@ -1,6 +1,7 @@
 import {
   ConflictException,
   ForbiddenException,
+  Injectable,
   InternalServerErrorException,
   UnauthorizedException,
 } from "@nestjs/common";
@@ -12,6 +13,7 @@ export interface CreateSectorResponse {
   name: string;
 }
 
+@Injectable()
 export class CreateSectorUseCase {
   constructor(private prisma: PrismaService) {}
 

@@ -16,6 +16,7 @@ import { CreateSectorUseCase } from "./use-cases/create-sector";
 import { GetAllSectorsUseCase } from "./use-cases/get-all-sectors";
 import { EditSectorUseCase } from "./use-cases/edit-sector";
 import { UpdateSectorDto } from "./dtos/update-sector.dto";
+import { GetSectorDetailsUseCase } from "./use-cases/get-sector-details";
 
 @Controller("api/v2/sector")
 export class SectorController {
@@ -23,6 +24,7 @@ export class SectorController {
     private createSectorUseCase: CreateSectorUseCase,
     private getAllSectorsUseCase: GetAllSectorsUseCase,
     private editSectorUseCase: EditSectorUseCase,
+    private getSectorDetailsUseCase: GetSectorDetailsUseCase,
   ) {}
 
   @Post("create")
@@ -48,7 +50,13 @@ export class SectorController {
     );
   }
 
-  @Patch(":sectorId")
+  @Get("details/:sectorId")
+  @HttpCode(HttpStatus.OK)
+  async getDetails(@Param("sectorId") sectorId: string) {
+    return this.getSectorDetailsUseCase.execute(sectorId);
+  }
+
+  @Patch("update/:sectorId")
   @HttpCode(HttpStatus.OK)
   async edit(
     @Body() request: UpdateSectorDto,
