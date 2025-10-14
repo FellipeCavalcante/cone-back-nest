@@ -5,6 +5,8 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "src/config/database/prisma.service";
 import * as bcrypt from "bcrypt";
+import { EmailService } from "src/config/email/email.service";
+import { registerEmailTemplate } from "../template/register-email";
 
 export interface RegisterResponse {
   id: string;
@@ -15,7 +17,10 @@ export interface RegisterResponse {
 
 @Injectable()
 export class RegisterUseCase {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private emailService: EmailService,
+  ) {}
 
   async execute({
     name,
@@ -60,6 +65,12 @@ export class RegisterUseCase {
         password: hashedPassword,
         type: type || null,
       },
+    });
+
+    await this.emailService.send({
+      to: user.email,
+      subject: "Bem-vindo ao Cone",
+      html: registerEmailTemplate(user.name),
     });
 
     return { id: user.id, name: user.name, email: user.email, type: user.type };
