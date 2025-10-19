@@ -52,7 +52,7 @@ export class CreateEnterpriseUseCase {
         },
       });
 
-      const newUserRole = await this.prisma.users.update({
+      const newUserRole = await this.prisma.user.update({
         where: { id: user.id },
         data: { enterprise_id: enterpriseCreated.id, type: "ADMIN" },
       });

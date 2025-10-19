@@ -33,7 +33,7 @@ export class AddUserUseCaseInProject {
         throw new NotFoundException("Project not found");
       }
 
-      await this.prisma.project_member.create({
+      await this.prisma.projectMember.create({
         data: {
           project_id: projectId,
           user_id: memberId,

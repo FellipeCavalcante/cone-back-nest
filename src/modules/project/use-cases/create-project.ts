@@ -47,13 +47,13 @@ export class CreateProjectUseCase {
           description,
           status: status || "STARTED",
           enterprise_id: user.enterpriseId ?? null,
-          project_member: {
+          members: {
             create:
               members?.map((memberId) => ({
                 user_id: memberId,
               })) || [],
           },
-          project_sub_sector: {
+          sub_sector_links: {
             create:
               subSectors?.map((subSectorId) => ({
                 sub_sector_id: subSectorId,

@@ -27,7 +27,7 @@ export class AddUserInSubSectorUseCase {
         throw new UnauthorizedException("User not authorized");
       }
 
-      await this.prisma.users.update({
+      await this.prisma.user.update({
         where: { id: memberId },
         data: { sub_sector_id: subSectorId },
       });

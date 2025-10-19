@@ -11,7 +11,7 @@ export class UpdateSubSectorUseCase {
 
   async execute(subSectorId: string, name: string): Promise<void> {
     try {
-      const subSector = await this.prisma.sub_sector.update({
+      const subSector = await this.prisma.subSector.update({
         where: { id: subSectorId },
         data: { name },
       });

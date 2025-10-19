@@ -10,14 +10,14 @@ export class GetAllEnterprisesMembers {
       const skip = (page - 1) * pageSize;
 
       const [members, total] = await this.prisma.$transaction([
-        this.prisma.users.findMany({
+        this.prisma.user.findMany({
           where: { enterprise_id: enterpriseId },
           select: { id: true, name: true, email: true, type: true },
           skip,
           take: pageSize,
           orderBy: { name: "asc" },
         }),
-        this.prisma.users.count({ where: { enterprise_id: enterpriseId } }),
+        this.prisma.user.count({ where: { enterprise_id: enterpriseId } }),
       ]);
 
       return {

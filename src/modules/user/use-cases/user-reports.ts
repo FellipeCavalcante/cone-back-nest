@@ -10,12 +10,12 @@ export class UserReportsUseCase {
       const skip = (page - 1) * pageSize;
 
       const [users, total] = await this.prisma.$transaction([
-        this.prisma.users.findMany({
+        this.prisma.user.findMany({
           skip,
           take: pageSize,
           orderBy: { name: "asc" },
         }),
-        this.prisma.users.count(),
+        this.prisma.user.count(),
       ]);
 
       return {

@@ -25,7 +25,7 @@ export class LoginUseCase {
     email: string;
     password: string;
   }): Promise<LoginResponse> {
-    const user = await this.prismaService.users.findUnique({
+    const user = await this.prismaService.user.findUnique({
       where: { email },
     });
 

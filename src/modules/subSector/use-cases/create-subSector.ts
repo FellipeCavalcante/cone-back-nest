@@ -39,7 +39,7 @@ export class CreateSubSectorUseCase {
       if (sectorExists.enterprise_id !== user.enterpriseId)
         throw new ForbiddenException("Sector id and user do not match");
 
-      const subSector = await this.prisma.sub_sector.create({
+      const subSector = await this.prisma.subSector.create({
         data: {
           name,
           sector_id: sector,

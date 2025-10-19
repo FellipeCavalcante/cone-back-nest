@@ -25,9 +25,9 @@ export class GetSectorDetailsUseCase {
       const sector = await this.prisma.sector.findUnique({
         where: { id: sectorId },
         include: {
-          sub_sector: {
+          sub_sectors: {
             include: {
-              project_sub_sector: true,
+              project_links: true,
             },
           },
         },
@@ -40,7 +40,7 @@ export class GetSectorDetailsUseCase {
       return {
         id: sector.id,
         name: sector.name,
-        sub_sectors: sector.sub_sector,
+        sub_sectors: sector.sub_sectors,
       };
     } catch (error: any) {
       if (error instanceof NotFoundException) {

@@ -33,19 +33,19 @@ export class CreateTaskUseCase {
     subSectorIds?: string[];
   }): Promise<TaskResponse> {
     try {
-      const task = await this.prisma.tasks.create({
+      const task = await this.prisma.task.create({
         data: {
           title,
           description,
           enterprise_id: user.enterpriseId || "",
           status: "PENDING",
-          task_members: {
+          members: {
             create:
               memberIds?.map((memberId) => ({
                 user_id: memberId,
               })) || [],
           },
-          task_sub_sector: {
+          sub_sector_links: {
             create:
               subSectorIds?.map((subSectorId) => ({
                 sub_sector_id: subSectorId,
@@ -53,8 +53,8 @@ export class CreateTaskUseCase {
           },
         },
         include: {
-          task_members: { select: { user_id: true } },
-          task_sub_sector: { select: { sub_sector_id: true } },
+          members: { select: { user_id: true } },
+          sub_sector_links: { select: { sub_sector_id: true } },
         },
       });
 
@@ -63,8 +63,8 @@ export class CreateTaskUseCase {
         creatorId: user.id,
         title: task.title,
         description: task.description,
-        memberIds: task.task_members.map((m) => m.user_id),
-        subSectorIds: task.task_sub_sector.map((s) => s.sub_sector_id),
+        memberIds: task.members.map((m) => m.user_id),
+        subSectorIds: task.sub_sector_links.map((s) => s.sub_sector_id),
       };
     } catch (error: any) {
       if (error instanceof NotFoundException) {

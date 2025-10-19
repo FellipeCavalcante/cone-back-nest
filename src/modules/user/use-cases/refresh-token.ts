@@ -15,7 +15,7 @@ export class RefreshTokenUseCase {
   ) {}
 
   async execute(user: UserDomain): Promise<RefreshTokenResponse> {
-    const userInDb = await this.prisma.users.findUnique({
+    const userInDb = await this.prisma.user.findUnique({
       where: { id: user.id },
     });
 

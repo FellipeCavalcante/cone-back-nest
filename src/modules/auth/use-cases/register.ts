@@ -33,7 +33,7 @@ export class RegisterUseCase {
     password: string;
     type?: string;
   }): Promise<RegisterResponse> {
-    const userExists = await this.prismaService.users.findUnique({
+    const userExists = await this.prismaService.user.findUnique({
       where: { email },
     });
 
@@ -58,7 +58,7 @@ export class RegisterUseCase {
       throw new BadRequestException("Invalid user type");
     }
 
-    const user = await this.prismaService.users.create({
+    const user = await this.prismaService.user.create({
       data: {
         name,
         email,
@@ -70,7 +70,7 @@ export class RegisterUseCase {
     await this.emailService.send({
       to: user.email,
       subject: "Bem-vindo ao Cone",
-      html: registerEmailTemplate(user.name),
+      html: registerEmailTemplate(user.name, "https://google.com"),
     });
 
     return { id: user.id, name: user.name, email: user.email, type: user.type };
