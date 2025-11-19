@@ -27,8 +27,6 @@ export class RefreshTokenUseCase {
       sub: userInDb.id,
       email: userInDb.email,
       type: userInDb.type,
-      enterpriseId: userInDb.enterprise_id,
-      subSectorId: userInDb.sub_sector_id,
     };
     const token = await this.jwtService.signAsync(payload);
 

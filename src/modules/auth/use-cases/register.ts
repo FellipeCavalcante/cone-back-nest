@@ -67,11 +67,11 @@ export class RegisterUseCase {
       },
     });
 
-    await this.emailService.send({
-      to: user.email,
-      subject: "Bem-vindo ao Cone",
-      html: registerEmailTemplate(user.name, "https://google.com"),
-    });
+    // await this.emailService.send({
+    //   to: user.email,
+    //   subject: "Bem-vindo ao Cone",
+    //   html: registerEmailTemplate(user.name, "https://google.com"),
+    // });
 
     return { id: user.id, name: user.name, email: user.email, type: user.type };
   }

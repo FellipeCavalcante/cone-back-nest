@@ -43,8 +43,6 @@ export class LoginUseCase {
       sub: user.id,
       email: user.email,
       type: user.type,
-      enterpriseId: user.enterprise_id,
-      subSectorId: user.sub_sector_id,
     };
     const token = await this.jwtService.signAsync(payload);
 
