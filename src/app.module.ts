@@ -9,6 +9,7 @@ import { AuthGuard } from "./config/guard/auth.guard";
 import { ConfigModule } from "@nestjs/config";
 import { EmailModule } from "./config/email/email.module";
 import { AwsS3Module } from "./config/aws/aws-s3.module";
+import { PlanModule } from "./modules/plan/plan.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AwsS3Module } from "./config/aws/aws-s3.module";
     UserModule,
     EmailModule,
     AwsS3Module,
+    PlanModule,
   ],
   controllers: [AppController],
   providers: [
