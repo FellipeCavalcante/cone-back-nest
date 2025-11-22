@@ -10,9 +10,307 @@ datasource db {
 model User {
   id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name       String    @db.VarChar(100)
-  password   String    @db.VarChar(100)
+  password   String    @db.VarChar(255)
   email      String    @unique @db.VarChar(100)
   type       String    @db.VarChar(10)
   created_at DateTime  @default(now())
   updated_at DateTime?
+  deleted_at DateTime?
+
+  profilePhoto   ProfilePhoto?
+  paymentMethods PaymentMethod[]
+  payments       Payment[]
+  invoices       Invoice[]
+  userPlans      UserPlan[]
+
+  @@map("user")
+}
+
+// Plan and Subscription related models
+
+model Plan {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String     @db.VarChar(100)
+  description String     @db.Text
+  price       Float
+  created_at  DateTime   @default(now())
+  updated_at  DateTime?
+  userPlans   UserPlan[]
+
+  @@map("plan")
+}
+
+model PaymentMethod {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String    @db.Uuid
+  gateway     String    @db.VarChar(30) // stripe, pagarme, mercadopago...
+  type        String    @db.VarChar(20) // card, pix, boleto...
+  token       String    @db.VarChar(255) // tokenized card ID
+  brand       String?   @db.VarChar(20) // visa, mastercard...
+  last4       String?   @db.VarChar(4)
+  exp_month   Int?
+  exp_year    Int?
+  holder_name String?   @db.VarChar(100)
+  is_default  Boolean   @default(false)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime?
+
+  user User @relation(fields: [user_id], references: [id])
+
+  payments  Payment[]
+  userPlans UserPlan[]
+
+  @@index([user_id])
+  @@map("payment_method")
+}
+
+model Payment {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String   @db.Uuid
+  payment_method_id String?  @db.Uuid
+  amount            Float
+  status            String   @db.VarChar(30) // pending, paid, failed, refunded
+  gateway           String   @db.VarChar(30) // stripe...
+  gateway_charge_id String?  @db.VarChar(255) // Gateway specific charge ID
+  created_at        DateTime @default(now())
+
+  user          User           @relation(fields: [user_id], references: [id])
+  paymentMethod PaymentMethod? @relation(fields: [payment_method_id], references: [id])
+
+  invoice Invoice?
+
+  @@index([user_id])
+  @@index([payment_method_id])
+  @@map("payment")
+}
+
+model Invoice {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  payment_id String    @unique @db.Uuid
+  user_id    String    @db.Uuid
+  amount     Float
+  status     String    @db.VarChar(30) // paid, pending, canceled
+  pdf_url    String?   @db.VarChar(500) // PDF file URL
+  due_date   DateTime?
+  created_at DateTime  @default(now())
+
+  payment Payment @relation(fields: [payment_id], references: [id])
+  user    User    @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@map("invoice")
+}
+
+model UserPlan {
+  id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                 String    @db.Uuid
+  plan_id                 String    @db.Uuid
+  start_date              DateTime
+  end_date                DateTime?
+  next_billing_date       DateTime? // new billing date
+  status                  String    @default("active") // active, canceled, past_due
+  payment_method_id       String?   @db.Uuid // opcional
+  gateway_subscription_id String?   @db.VarChar(255)
+  created_at              DateTime  @default(now())
+  updated_at              DateTime?
+
+  user          User           @relation(fields: [user_id], references: [id])
+  plan          Plan           @relation(fields: [plan_id], references: [id])
+  paymentMethod PaymentMethod? @relation(fields: [payment_method_id], references: [id])
+
+  @@index([user_id])
+  @@index([plan_id])
+  @@index([payment_method_id])
+  @@map("user_plan")
+}
+
+// Enterprise related models
+
+model Enterprise {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String        @db.VarChar(100)
+  description  String        @db.Text
+  created_at   DateTime      @default(now())
+  updated_at   DateTime?
+  profilePhoto ProfilePhoto?
+
+  @@map("enterprise")
+}
+
+model UserEnterprise {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String    @db.Uuid
+  enterprise_id String    @db.Uuid
+  role          String    @db.VarChar(50)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime?
+
+  @@index([user_id])
+  @@index([enterprise_id])
+  @@map("user_enterprise")
+}
+
+model Sector {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String    @db.VarChar(100)
+  enterprise_id String    @db.Uuid
+  created_at    DateTime  @default(now())
+  updated_at    DateTime?
+
+  @@index([enterprise_id])
+  @@map("sector")
+}
+
+// Task related models
+
+model Task {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title           String           @db.VarChar(200)
+  description     String           @db.Text
+  status          String           @db.VarChar(50)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime?
+  taskAttachments TaskAttachment[]
+
+  @@map("task")
+}
+
+model UserTask {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String    @db.Uuid
+  task_id     String    @db.Uuid
+  assigned_at DateTime  @default(now())
+  created_at  DateTime  @default(now())
+  updated_at  DateTime?
+
+  @@index([user_id])
+  @@index([task_id])
+  @@map("user_task")
+}
+
+model SectorTask {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sector_id  String    @db.Uuid
+  task_id    String    @db.Uuid
+  created_at DateTime  @default(now())
+  updated_at DateTime?
+
+  @@index([sector_id])
+  @@index([task_id])
+  @@map("sector_task")
+}
+
+// Project related models
+
+model Project {
+  id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String              @db.VarChar(100)
+  description        String              @db.Text
+  status             String              @db.VarChar(50)
+  enterprise_id      String              @db.Uuid
+  created_at         DateTime            @default(now())
+  updated_at         DateTime?
+  projectAttachments ProjectAttachment[]
+
+  @@index([enterprise_id])
+  @@map("project")
+}
+
+model UserProject {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String    @db.Uuid
+  project_id String    @db.Uuid
+  role       String    @db.VarChar(50)
+  created_at DateTime  @default(now())
+  updated_at DateTime?
+
+  @@index([user_id])
+  @@index([project_id])
+  @@map("user_project")
+}
+
+model ProjectTask {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  project_id String    @db.Uuid
+  task_id    String    @db.Uuid
+  created_at DateTime  @default(now())
+  updated_at DateTime?
+
+  @@index([project_id])
+  @@index([task_id])
+  @@map("project_task")
+}
+
+model ProjectSector {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  project_id String    @db.Uuid
+  sector_id  String    @db.Uuid
+  created_at DateTime  @default(now())
+  updated_at DateTime?
+
+  @@index([project_id])
+  @@index([sector_id])
+  @@map("project_sector")
+}
+
+// Attachment related models
+
+model Attachment {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  file_name   String   @db.VarChar(255)
+  file_type   String   @db.VarChar(50)
+  file_size   Int?
+  s3_key      String   @unique @db.VarChar(500)
+  description String?  @db.Text
+  created_at  DateTime @default(now())
+
+  profilePhoto       ProfilePhoto?
+  taskAttachments    TaskAttachment[]
+  projectAttachments ProjectAttachment[]
+
+  @@map("attachment")
+}
+
+model ProfilePhoto {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  attachment_id String   @unique @db.Uuid
+  user_id       String?  @unique @db.Uuid
+  enterprise_id String?  @unique @db.Uuid
+  created_at    DateTime @default(now())
+
+  attachment Attachment  @relation(fields: [attachment_id], references: [id])
+  user       User?       @relation(fields: [user_id], references: [id])
+  enterprise Enterprise? @relation(fields: [enterprise_id], references: [id])
+
+  @@index([user_id])
+  @@index([enterprise_id])
+  @@map("profile_photo")
+}
+
+model TaskAttachment {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task_id       String   @db.Uuid
+  attachment_id String   @db.Uuid
+  created_at    DateTime @default(now())
+
+  task       Task       @relation(fields: [task_id], references: [id])
+  attachment Attachment @relation(fields: [attachment_id], references: [id])
+
+  @@index([task_id])
+  @@index([attachment_id])
+  @@map("task_attachment")
+}
+
+model ProjectAttachment {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  project_id    String   @db.Uuid
+  attachment_id String   @db.Uuid
+  created_at    DateTime @default(now())
+
+  project    Project    @relation(fields: [project_id], references: [id])
+  attachment Attachment @relation(fields: [attachment_id], references: [id])
+
+  @@index([project_id])
+  @@index([attachment_id])
+  @@map("project_attachment")
 }
