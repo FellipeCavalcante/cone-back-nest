@@ -6,6 +6,7 @@ import { PrismaService } from "src/config/database/prisma.service";
 import { LoginUseCase } from "./use-cases/login";
 import { RegisterUseCase } from "./use-cases/register";
 import { EmailModule } from "src/config/email/email.module";
+import { AwsS3Module } from "src/config/aws/aws-s3.module";
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { EmailModule } from "src/config/email/email.module";
       secret: jwtConstants?.secret || process.env.SECRET_KEY,
       signOptions: { expiresIn: "4h" },
     }),
-    EmailModule
+    EmailModule,
+    AwsS3Module,
   ],
   controllers: [AuthController],
   providers: [LoginUseCase, RegisterUseCase, PrismaService],
