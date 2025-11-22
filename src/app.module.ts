@@ -8,6 +8,7 @@ import { UserModule } from "./modules/user/user.module";
 import { AuthGuard } from "./config/guard/auth.guard";
 import { ConfigModule } from "@nestjs/config";
 import { EmailModule } from "./config/email/email.module";
+import { AwsS3Module } from "./config/aws/aws-s3.module";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { EmailModule } from "./config/email/email.module";
     PrismaModule,
     UserModule,
     EmailModule,
+    AwsS3Module,
   ],
   controllers: [AppController],
   providers: [
