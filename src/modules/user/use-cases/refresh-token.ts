@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "src/config/database/prisma.service";
-import { UserDomain } from "../domain/user";
+import { AuthUser } from "../domain/user";
 
 export interface RefreshTokenResponse {
   token: string;
@@ -14,9 +14,9 @@ export class RefreshTokenUseCase {
     private jwtService: JwtService,
   ) {}
 
-  async execute(user: UserDomain): Promise<RefreshTokenResponse> {
+  async execute(user: AuthUser): Promise<RefreshTokenResponse> {
     const userInDb = await this.prisma.user.findUnique({
-      where: { id: user.id },
+      where: { id: user.sub },
     });
 
     if (!userInDb) {

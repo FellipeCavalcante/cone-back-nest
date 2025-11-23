@@ -10,6 +10,7 @@ import { ConfigModule } from "@nestjs/config";
 import { EmailModule } from "./config/email/email.module";
 import { AwsS3Module } from "./config/aws/aws-s3.module";
 import { PlanModule } from "./modules/plan/plan.module";
+import { PaymentModule } from "./modules/payment/payment.module";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PlanModule } from "./modules/plan/plan.module";
     EmailModule,
     AwsS3Module,
     PlanModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [

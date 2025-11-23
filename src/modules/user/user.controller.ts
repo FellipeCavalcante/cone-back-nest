@@ -1,8 +1,8 @@
 import { Controller, Get } from "@nestjs/common";
 import { GetUser } from "src/utils/decorators/get-user.decorator";
-import { UserDomain } from "./domain/user";
 import { RefreshTokenUseCase } from "./use-cases/refresh-token";
 import { UserReportsUseCase } from "./use-cases/user-reports";
+import { AuthUser } from "./domain/user";
 
 @Controller("api/v2/user")
 export class UserController {
@@ -17,7 +17,7 @@ export class UserController {
   }
 
   @Get("refresh-token")
-  async refresh(@GetUser() user: UserDomain) {
+  async refresh(@GetUser() user: AuthUser) {
     return this.refreshTokenUseCase.execute(user);
   }
 }

@@ -1,7 +1,5 @@
-export interface UserDomain {
-  id: string;
+export interface AuthUser {
+  sub: string;
   email: string;
   type: string | null;
-  enterpriseId?: string | null;
-  sub_sectorId?: string | null;
 }

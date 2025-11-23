@@ -130,4 +130,22 @@ export class S3StorageService {
       throw error;
     }
   }
+
+  // UPLOAD BUFFER
+  async uploadBuffer(
+    buffer: Buffer,
+    key: string,
+    contentType = "application/pdf",
+  ) {
+    await this.s3.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: contentType,
+      }),
+    );
+
+    return key;
+  }
 }
