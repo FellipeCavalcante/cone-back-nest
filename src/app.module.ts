@@ -11,6 +11,7 @@ import { EmailModule } from "./config/email/email.module";
 import { AwsS3Module } from "./config/aws/aws-s3.module";
 import { PlanModule } from "./modules/plan/plan.module";
 import { PaymentModule } from "./modules/payment/payment.module";
+import { InvoiceModule } from "./modules/invoice/invoice.module";
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PaymentModule } from "./modules/payment/payment.module";
     AwsS3Module,
     PlanModule,
     PaymentModule,
+    InvoiceModule,
   ],
   controllers: [AppController],
   providers: [

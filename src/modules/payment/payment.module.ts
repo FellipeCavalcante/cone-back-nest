@@ -1,19 +1,13 @@
 import { Module } from "@nestjs/common";
 import { PaymentController } from "./payment.controller";
-import { PaymentUseCaseSelectPlan } from "./use-cases/select-plan";
-import { CreateInvoiceUseCase } from "./use-cases/create-invoice";
-import { CreateUserPlanUseCase } from "./use-cases/create-user-plan";
-import { CreatePaymentUseCase } from "./use-cases/create-payment";
 import { AwsS3Module } from "src/config/aws/aws-s3.module";
+import { PaymentService } from "./payment.service";
+import { PrismaService } from "src/config/database/prisma.service";
+import { S3StorageService } from "src/config/aws/s3-storage.service";
 
 @Module({
   imports: [AwsS3Module],
   controllers: [PaymentController],
-  providers: [
-    PaymentUseCaseSelectPlan,
-    CreateInvoiceUseCase,
-    CreateUserPlanUseCase,
-    CreatePaymentUseCase,
-  ],
+  providers: [PaymentService, PrismaService, S3StorageService],
 })
 export class PaymentModule {}

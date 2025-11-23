@@ -1,34 +1,22 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
-  Post,
-  Req,
   UseGuards,
 } from "@nestjs/common";
-import { PaymentUseCaseSelectPlan } from "./use-cases/select-plan";
 import { AuthGuard } from "src/config/guard/auth.guard";
-import { SelectPlanDto } from "./dtos/select-plan-body.dto";
-import { AuthUser } from "../user/domain/user";
+import { PaymentService } from "./payment.service";
 
 @UseGuards(AuthGuard)
 @Controller("api/v1/payment")
 export class PaymentController {
-  constructor(private selectPlanUseCase: PaymentUseCaseSelectPlan) {}
+  constructor(private service: PaymentService) {}
 
-  @Post("select-plan")
+  @Get()
   @HttpCode(HttpStatus.OK)
-  async selectPlan(
-    @Req() req: { user: AuthUser },
-    @Body() body: SelectPlanDto,
-  ) {
-    const user_id = req.user.sub;
-
-    return await this.selectPlanUseCase.execute({
-      user_id,
-      plan_id: body.plan_id,
-      payment_method_id: body.payment_method_id,
-    });
+  async list() {
+    return this.service.listMethods();
   }
 }
