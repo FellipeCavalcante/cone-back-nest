@@ -6,6 +6,6 @@ import { S3StorageService } from "./s3-storage.service";
 @Module({
   imports: [ConfigModule],
   providers: [AwsS3Provider, S3StorageService],
-  exports: [S3StorageService],
+  exports: [S3StorageService, AwsS3Provider],
 })
 export class AwsS3Module {}
