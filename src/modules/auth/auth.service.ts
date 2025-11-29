@@ -8,9 +8,9 @@ import { S3StorageService } from "src/config/aws/s3-storage.service";
 import { EmailService } from "src/config/email/email.service";
 import { registerEmailTemplate } from "./template/register-email";
 import * as bcrypt from "bcrypt";
-import { UserRepository } from "./repositories/user.repository";
-import { ProfilePhotoRepository } from "./repositories/profile-photo.repository";
-import { AttachmentRepository } from "./repositories/attachment.repository";
+import { UserRepository } from "../../utils/repositories/user.repository";
+import { ProfilePhotoRepository } from "../../utils/repositories/profile-photo.repository";
+import { AttachmentRepository } from "../../utils/repositories/attachment.repository";
 
 export interface RegisterResponse {
   id: string;

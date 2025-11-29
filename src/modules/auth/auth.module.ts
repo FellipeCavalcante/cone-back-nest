@@ -6,9 +6,9 @@ import { AuthController } from "./auth.controller";
 import { PrismaService } from "src/config/database/prisma.service";
 import { EmailModule } from "src/config/email/email.module";
 import { AwsS3Module } from "src/config/aws/aws-s3.module";
-import { UserRepository } from "./repositories/user.repository";
-import { ProfilePhotoRepository } from "./repositories/profile-photo.repository";
-import { AttachmentRepository } from "./repositories/attachment.repository";
+import { UserRepository } from "../../utils/repositories/user.repository";
+import { ProfilePhotoRepository } from "../../utils/repositories/profile-photo.repository";
+import { AttachmentRepository } from "../../utils/repositories/attachment.repository";
 
 @Module({
   imports: [

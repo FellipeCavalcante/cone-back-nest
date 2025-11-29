@@ -1,7 +1,7 @@
 import { Controller, Get } from "@nestjs/common";
 import { GetUser } from "src/utils/decorators/get-user.decorator";
 import { AuthUser } from "./domain/user";
-import { UserService } from "./use.service";
+import { UserService } from "./user.service";
 
 @Controller("api/v1/user")
 export class UserController {

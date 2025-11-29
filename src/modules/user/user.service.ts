@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { PrismaService } from "src/config/database/prisma.service";
 import { AuthUser } from "./domain/user";
+import { UserRepository } from "src/utils/repositories/user.repository";
 
 export interface RefreshTokenResponse {
   token: string;
@@ -10,14 +10,12 @@ export interface RefreshTokenResponse {
 @Injectable()
 export class UserService {
   constructor(
-    private prisma: PrismaService,
     private jwtService: JwtService,
+    private userRepository: UserRepository,
   ) {}
 
   async refreshToken(user: AuthUser): Promise<RefreshTokenResponse> {
-    const userInDb = await this.prisma.user.findUnique({
-      where: { id: user.sub },
-    });
+    const userInDb = await this.userRepository.findByEmail(user.email);
 
     if (!userInDb) {
       throw new InternalServerErrorException("User not found");
@@ -35,24 +33,7 @@ export class UserService {
 
   async reports(page = 1, pageSize = 10) {
     try {
-      const skip = (page - 1) * pageSize;
-
-      const [users, total] = await this.prisma.$transaction([
-        this.prisma.user.findMany({
-          skip,
-          take: pageSize,
-          orderBy: { name: "asc" },
-        }),
-        this.prisma.user.count(),
-      ]);
-
-      return {
-        data: users,
-        page,
-        pageSize,
-        total,
-        totalPages: Math.ceil(total / pageSize),
-      };
+      return this.userRepository.getPaginated(page, pageSize);
     } catch (error: any) {
       throw new InternalServerErrorException({
         message: "Internal server error",
