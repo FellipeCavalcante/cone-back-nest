@@ -1,22 +1,24 @@
+import { UserPlanRepository } from "src/utils/repositories/userPlanRepository";
 import { PaymentService } from "./../payment/payment.service";
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "src/config/database/prisma.service";
 import { InvoiceService } from "../invoice/invoice.service";
 import { addMonths } from "date-fns";
+import { PlanRepository } from "src/utils/repositories/plan.repository";
+import { PaymentMethodRepository } from "src/utils/repositories/paymentMethod.repository";
 
 @Injectable()
 export class PlanService {
   constructor(
-    private prisma: PrismaService,
+    private planRepository: PlanRepository,
+    private paymentMethodRepository: PaymentMethodRepository,
+    private userPlanRepository: UserPlanRepository,
     private paymentService: PaymentService,
     private invoiceService: InvoiceService,
   ) {}
 
   async listPlans() {
     try {
-      const plans = await this.prisma.plan.findMany({
-        orderBy: { created_at: "desc" },
-      });
+      const plans = await this.planRepository.findAll();
 
       return { data: plans };
     } catch (error: any) {}
@@ -24,9 +26,7 @@ export class PlanService {
 
   async planDetails(planId: string) {
     try {
-      const plan = await this.prisma.plan.findUnique({
-        where: { id: planId },
-      });
+      const plan = await this.planRepository.findUnique(planId);
 
       if (!plan) {
         throw new NotFoundException("Plan not found");
@@ -50,17 +50,16 @@ export class PlanService {
     payment_method_id: string;
   }) {
     try {
-      const plan = await this.prisma.plan.findUnique({
-        where: { id: plan_id },
-      });
+      const plan = await this.planRepository.findUnique(plan_id);
+
       if (!plan) {
         throw new NotFoundException("Plan not found");
       }
 
       // verify payment method
-      const paymentMethod = await this.prisma.paymentMethod.findUnique({
-        where: { id: payment_method_id },
-      });
+      const paymentMethod =
+        await this.paymentMethodRepository.findUnique(payment_method_id);
+
       if (!paymentMethod) {
         throw new NotFoundException("Payment method not found");
       }
@@ -112,18 +111,11 @@ export class PlanService {
     payment_method_id: string;
   }) {
     try {
-      const now = new Date();
-
-      return await this.prisma.userPlan.create({
-        data: {
-          user_id,
-          plan_id,
-          payment_method_id,
-          start_date: now,
-          next_billing_date: addMonths(now, 1),
-          status: "active",
-        },
-      });
+      return await this.userPlanRepository.create(
+        user_id,
+        plan_id,
+        payment_method_id,
+      );
     } catch (error: any) {
       throw error;
     }
