@@ -6,6 +6,9 @@ import { AuthController } from "./auth.controller";
 import { PrismaService } from "src/config/database/prisma.service";
 import { EmailModule } from "src/config/email/email.module";
 import { AwsS3Module } from "src/config/aws/aws-s3.module";
+import { UserRepository } from "./repositories/user.repository";
+import { ProfilePhotoRepository } from "./repositories/profile-photo.repository";
+import { AttachmentRepository } from "./repositories/attachment.repository";
 
 @Module({
   imports: [
@@ -18,6 +21,12 @@ import { AwsS3Module } from "src/config/aws/aws-s3.module";
     AwsS3Module,
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService],
+  providers: [
+    AuthService,
+    PrismaService,
+    UserRepository,
+    ProfilePhotoRepository,
+    AttachmentRepository,
+  ],
 })
 export class AuthModule {}

@@ -5,10 +5,12 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { S3StorageService } from "src/config/aws/s3-storage.service";
-import { PrismaService } from "src/config/database/prisma.service";
 import { EmailService } from "src/config/email/email.service";
 import { registerEmailTemplate } from "./template/register-email";
 import * as bcrypt from "bcrypt";
+import { UserRepository } from "./repositories/user.repository";
+import { ProfilePhotoRepository } from "./repositories/profile-photo.repository";
+import { AttachmentRepository } from "./repositories/attachment.repository";
 
 export interface RegisterResponse {
   id: string;
@@ -28,10 +30,12 @@ export interface LoginResponse {
 @Injectable()
 export class AuthService {
   constructor(
-    private prismaService: PrismaService,
     private emailService: EmailService,
     private s3: S3StorageService,
     private jwtService: JwtService,
+    private userRepository: UserRepository,
+    private profilePhotoRepository: ProfilePhotoRepository,
+    private attachmentRepository: AttachmentRepository,
   ) {}
 
   async register(
@@ -48,10 +52,7 @@ export class AuthService {
     },
     profilePhoto?: Express.Multer.File,
   ): Promise<RegisterResponse> {
-    const userExists = await this.prismaService.user.findUnique({
-      where: { email },
-    });
-
+    const userExists = await this.userRepository.findByEmail(email);
     if (userExists) {
       throw new UnauthorizedException("User already exists");
     }
@@ -68,13 +69,11 @@ export class AuthService {
       throw new BadRequestException("Invalid user type");
     }
 
-    const user = await this.prismaService.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        type: type || null,
-      },
+    const user = await this.userRepository.create({
+      name,
+      email,
+      password: hashedPassword,
+      type,
     });
 
     if (profilePhoto) {
@@ -83,21 +82,14 @@ export class AuthService {
         `profile-photos/${user.id}`,
       );
 
-      const attachment = await this.prismaService.attachment.create({
-        data: {
-          file_name: profilePhoto.originalname,
-          file_type: profilePhoto.mimetype,
-          file_size: profilePhoto.size,
-          s3_key: key,
-        },
+      const attachment = await this.attachmentRepository.createAttachment({
+        file_name: profilePhoto.originalname,
+        file_type: profilePhoto.mimetype,
+        file_size: profilePhoto.size,
+        s3_key: key,
       });
 
-      await this.prismaService.profilePhoto.create({
-        data: {
-          user_id: user.id,
-          attachment_id: attachment.id,
-        },
-      });
+      await this.profilePhotoRepository.linkPhotoToUser(user.id, attachment.id);
     }
 
     await this.emailService.send({
@@ -116,9 +108,7 @@ export class AuthService {
     email: string;
     password: string;
   }): Promise<LoginResponse> {
-    const user = await this.prismaService.user.findUnique({
-      where: { email },
-    });
+    const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       throw new UnauthorizedException("Invalid credentials");
